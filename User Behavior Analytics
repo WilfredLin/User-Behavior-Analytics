@@ -1,0 +1,47 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+class UserBehaviorAnalytics:
+    def __init__(self, data):
+        self.data = data
+        self.scaled_data = None
+        self.pca_data = None
+        self.kmeans_model = None
+
+    def preprocess_data(self):
+        self.scaled_data = StandardScaler().fit_transform(self.data)
+
+    def reduce_dimensions(self):
+        pca = PCA(n_components=2)
+        self.pca_data = pca.fit_transform(self.scaled_data)
+
+    def cluster_data(self, n_clusters):
+        self.kmeans_model = KMeans(n_clusters=n_clusters)
+        self.kmeans_model.fit(self.pca_data)
+        return self.kmeans_model.labels_
+
+    def evaluate_clustering(self):
+        score = silhouette_score(self.pca_data, self.kmeans_model.labels_)
+        return score
+
+# Example usage:
+if __name__ == '__main__':
+    # Sample user behavior data
+    data = pd.DataFrame({
+        'Page_Views': np.random.randint(1, 100, 1000),
+        'Time_Spent': np.random.randint(1, 300, 1000),
+        'Clicks': np.random.randint(1, 50, 1000)
+    })
+    
+    uba = UserBehaviorAnalytics(data)
+    uba.preprocess_data()
+    uba.reduce_dimensions()
+    labels = uba.cluster_data(n_clusters=5)
+    score = uba.evaluate_clustering()
+    
+    print("Cluster Labels:", labels)
+    print("Silhouette Score:", score)
